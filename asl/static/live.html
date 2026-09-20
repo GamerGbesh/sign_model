@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignSpeak Live Recognition</title>
+  <style>
+    :root {
+      --bg: #0f141c;
+      --card-bg: #1a2230;
+      --border: #2d3748;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #10b981;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+    }
+    header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+    .status-badge {
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: #374151;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .status-badge.connected { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    .status-badge.active { background: rgba(59, 130, 246, 0.2); color: var(--accent); }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      width: 100%;
+      max-width: 900px;
+    }
+    @media (max-width: 768px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .video-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .video-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #000;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      /* Mirrored for display only */
+      transform: scaleX(-1);
+    }
+    .video-controls {
+      display: flex;
+      gap: 10px;
+      padding: 16px;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+    }
+    button {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #374151; color: var(--text); }
+    .btn-secondary:hover { background: #4b5563; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .card-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .detected-word-container {
+      text-align: center;
+      padding: 12px 0;
+    }
+    .detected-word {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      min-height: 2.8rem;
+    }
+    .confidence-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: #374151;
+      border-radius: 3px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .confidence-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--success);
+      transition: width 0.1s ease;
+    }
+
+    .topk-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .topk-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+    .topk-label { font-weight: 500; }
+    .topk-val { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+    .phrase-box {
+      min-height: 60px;
+      background: #111827;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 1rem;
+      color: #93c5fd;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: flex-start;
+    }
+    .word-pill {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .stat-item {
+      background: #111827;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+    }
+    .stat-val { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .stat-lbl { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SignSpeak Live Recognition</h1>
+    <div id="statusBadge" class="status-badge">Disconnected</div>
+  </header>
+
+  <div class="main-grid">
+    <div class="video-card">
+      <div class="video-container">
+        <video id="webcamVideo" autoplay playsinline muted></video>
+      </div>
+      <div class="video-controls">
+        <button id="startBtn" class="btn-primary">Start Camera</button>
+        <button id="stopBtn" class="btn-danger" disabled>Stop</button>
+        <button id="resetBtn" class="btn-secondary" disabled>Reset Phrase</button>
+      </div>
+    </div>
+
+    <div class="side-panel">
+      <!-- Current Active Word -->
+      <div class="card">
+        <div class="card-title">Live Recognition</div>
+        <div class="detected-word-container">
+          <div id="activeWord" class="detected-word">—</div>
+          <div class="confidence-bar-bg">
+            <div id="confFill" class="confidence-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top-3 Guesses -->
+      <div class="card">
+        <div class="card-title">Top-3 Candidates</div>
+        <div id="topkList" class="topk-list">
+          <div class="topk-row"><span class="topk-label">—</span><span class="topk-val">0%</span></div>
+          <div class="topk-row"><span class="topk-label">—</span><span class="topk-val">0%</span></div>
+          <div class="topk-row"><span class="topk-label">—</span><span class="topk-val">0%</span></div>
+        </div>
+      </div>
+
+      <!-- Committed Phrase -->
+      <div class="card">
+        <div class="card-title">Committed Signs</div>
+        <div id="phraseBox" class="phrase-box"></div>
+      </div>
+
+      <!-- Stream Metrics -->
+      <div class="card">
+        <div class="card-title">Performance Metrics</div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div id="fpsDisplay" class="stat-val">0.0</div>
+            <div class="stat-lbl">Inference FPS</div>
+          </div>
+          <div class="stat-item">
+            <div id="rttDisplay" class="stat-val">0 ms</div>
+            <div class="stat-lbl">Latency</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { SignSpeakClient } from '/static/signspeak-client.js';
+
+    const videoEl = document.getElementById('webcamVideo');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusBadge = document.getElementById('statusBadge');
+    const activeWordEl = document.getElementById('activeWord');
+    const confFill = document.getElementById('confFill');
+    const topkList = document.getElementById('topkList');
+    const phraseBox = document.getElementById('phraseBox');
+    const fpsDisplay = document.getElementById('fpsDisplay');
+    const rttDisplay = document.getElementById('rttDisplay');
+
+    const client = new SignSpeakClient({ fps: 15, maxWidth: 480 });
+
+    let lastPredTime = performance.now();
+    let frameCount = 0;
+    let fpsVal = 0;
+
+    client.on('ready', (info) => {
+      statusBadge.textContent = 'Active (Ready)';
+      statusBadge.className = 'status-badge connected active';
+    });
+
+    client.on('prediction', (data) => {
+      const now = performance.now();
+      frameCount++;
+      const dt = (now - lastPredTime) / 1000.0;
+      if (dt >= 1.0) {
+        fpsVal = frameCount / dt;
+        fpsDisplay.textContent = fpsVal.toFixed(1);
+        frameCount = 0;
+        lastPredTime = now;
+      }
+
+      // Latency estimate (client to server round trip)
+      const rtt = Math.max(1, Math.round(now - (data.t || now)));
+      rttDisplay.textContent = `${rtt} ms`;
+
+      // Word and confidence
+      const isIdle = data.label === 'idle' || data.warming_up;
+      activeWordEl.textContent = isIdle ? '—' : data.label.toUpperCase();
+      const confPct = Math.round((data.conf || 0) * 100);
+      confFill.style.width = isIdle ? '0%' : `${confPct}%`;
+
+      // Top-k
+      if (data.topk && data.topk.length) {
+        topkList.innerHTML = data.topk.map(([label, score]) => `
+          <div class="topk-row">
+            <span class="topk-label" style="${label === data.label ? 'color: #60a5fa;' : ''}">${label}</span>
+            <span class="topk-val">${Math.round(score * 100)}%</span>
+          </div>
+        `).join('');
+      }
+
+      // Update phrase pills
+      if (data.phrase) {
+        renderPhrase(data.phrase);
+      }
+    });
+
+    client.on('commit', (word) => {
+      console.log('Committed word:', word);
+    });
+
+    client.on('error', (err) => {
+      console.error(err);
+      statusBadge.textContent = 'Error';
+      statusBadge.className = 'status-badge';
+    });
+
+    client.on('close', () => {
+      statusBadge.textContent = 'Disconnected';
+      statusBadge.className = 'status-badge';
+    });
+
+    function renderPhrase(phrase) {
+      phraseBox.innerHTML = phrase.map(w => `<span class="word-pill">${w.toUpperCase()}</span>`).join('');
+    }
+
+    startBtn.onclick = async () => {
+      startBtn.disabled = true;
+      try {
+        await client.start(videoEl);
+        stopBtn.disabled = false;
+        resetBtn.disabled = false;
+        statusBadge.textContent = 'Connecting...';
+        statusBadge.className = 'status-badge connected';
+      } catch (err) {
+        startBtn.disabled = false;
+        alert('Could not start camera: ' + err.message);
+      }
+    };
+
+    stopBtn.onclick = () => {
+      client.stop();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      resetBtn.disabled = true;
+      statusBadge.textContent = 'Stopped';
+      statusBadge.className = 'status-badge';
+      activeWordEl.textContent = '—';
+      confFill.style.width = '0%';
+    };
+
+    resetBtn.onclick = () => {
+      client.reset();
+      phraseBox.innerHTML = '';
+    };
+  </script>
+</body>
+</html>
