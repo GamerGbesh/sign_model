@@ -113,6 +113,15 @@ class StreamingRecognizer:
         self.cooldown_satisfied = True
         self.idle_stretch_ms = 0.0
         self.phrase.clear()
+
+        # Recreate extractor if owned to reset MediaPipe timestamp monotonicity
+        if self._owns_extractor:
+            try:
+                self.extractor.close()
+            except Exception:
+                pass
+            self.extractor = HolisticExtractor(running_mode="VIDEO")
+
         self.latest_result = {
             "t": 0,
             "label": self.idle_label,
