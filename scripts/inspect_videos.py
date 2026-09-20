@@ -152,6 +152,8 @@ def main():
     all_flagged = []
     label_summaries = {}
 
+    all_segments_by_label = defaultdict(list)
+
     for label, paths in sorted(video_groups.items()):
             print(f"--- Label: {label} ({len(paths)} videos) ---")
             total_dur = 0.0
@@ -162,47 +164,73 @@ def main():
             saved_thumbs = 0
 
             for p in paths:
-                with HolisticExtractor(running_mode="VIDEO") as extractor:
-                    info = inspect_video(p, extractor)
-                if info is None:
-                    print(f"  [ERROR] Could not read {p.name}")
-                    continue
+                # Use cached extraction
+                from asl import video_features
+                frames, ts_ms, fps = video_features.extract_video(p)
 
-                total_dur += info["duration_s"]
-                resolutions.add(f"{info['width']}x{info['height']}")
-                fps_list.append(info["fps"])
-                pose_rates.append(info["pose_rate"])
-                hand_rates.append(info["hand_rate"])
+                # Compute detection stats from extracted frames
+                pose_present = np.any(frames[:, C.POSE_SLICE] != 0.0, axis=1)
+                lh_present = np.any(frames[:, C.LH_SLICE] != 0.0, axis=1)
+                rh_present = np.any(frames[:, C.RH_SLICE] != 0.0, axis=1)
+                has_hand = lh_present | rh_present
+
+                n_frames = len(frames)
+                dur_s = (ts_ms[-1] - ts_ms[0]) / 1000.0 if n_frames > 1 else (n_frames / fps)
+                pose_rate = np.mean(pose_present) if n_frames > 0 else 0.0
+                hand_rate = np.mean(has_hand) if n_frames > 0 else 0.0
+
+                cap = cv2.VideoCapture(str(p))
+                w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                cap.release()
+
+                total_dur += dur_s
+                resolutions.add(f"{w}x{h}")
+                fps_list.append(fps)
+                pose_rates.append(pose_rate)
+                hand_rates.append(hand_rate)
+
+                # Compute segments
+                segs = video_features.segments(frames, ts_ms, fps=fps)
+                for s_start, s_end in segs:
+                    seg_dur = (s_end - s_start) / 1000.0
+                    all_segments_by_label[label].append(seg_dur)
 
                 flag = ""
-                if info["hand_rate"] < 0.70:
+                if hand_rate < 0.70:
                     flag = " [FLAG: hand < 70%]"
-                    all_flagged.append((label, p.name, info["hand_rate"]))
+                    all_flagged.append((label, p.name, hand_rate))
 
-                print(f"  {p.name:<15s} {info['duration_s']:4.1f}s | {info['width']}x{info['height']} @ {info['fps']:4.1f}fps | "
-                      f"pose: {info['pose_rate']:4.0%} | hand: {info['hand_rate']:4.0%}{flag}")
+                print(f"  {p.name:<15s} {dur_s:4.1f}s | {w}x{h} @ {fps:4.1f}fps | "
+                      f"pose: {pose_rate:4.0%} | hand: {hand_rate:4.0%} | segs: {len(segs)}{flag}")
 
-                # Save up to 3 thumbnails per label across files
-                if saved_thumbs < 3 and info["annotated_frames"]:
-                    cand_frames = info["annotated_frames"]
-                    # Pick from start, mid, end if available
-                    pick_indices = np.linspace(0, len(cand_frames) - 1, min(3 - saved_thumbs, len(cand_frames)), dtype=int)
-                    for idx in pick_indices:
-                        frame_no, img = cand_frames[idx]
-                        thumb_name = f"{label}_thumb_{saved_thumbs + 1}_{p.stem}_f{frame_no}.jpg"
-                        cv2.imwrite(str(thumbs_dir / thumb_name), img)
-                        saved_thumbs += 1
+                # Save thumbnails if needed
+                if saved_thumbs < 3:
+                    cap = cv2.VideoCapture(str(p))
+                    cands = []
+                    f_idx = 0
+                    with HolisticExtractor(running_mode="VIDEO") as ext:
+                        while len(cands) < 3:
+                            ok, fr = cap.read()
+                            if not ok:
+                                break
+                            if f_idx < len(ts_ms):
+                                t_ms = int(ts_ms[f_idx])
+                                _, res, pp = ext(fr, timestamp_ms=t_ms)
+                                if pp:
+                                    cands.append((f_idx, draw_overlay(fr, res)))
+                            f_idx += 1
+                    cap.release()
+                    for f_no, img in cands:
+                        if saved_thumbs < 3:
+                            thumb_name = f"{label}_thumb_{saved_thumbs + 1}_{p.stem}_f{f_no}.jpg"
+                            cv2.imwrite(str(thumbs_dir / thumb_name), img)
+                            saved_thumbs += 1
 
-                # If --plot is requested and video_features exists
                 if args.plot:
-                    try:
-                        from asl import video_features
-                        act = video_features.activity(info["features"])
-                        segs = video_features.segments(info["features"], info["timestamps_ms"])
-                        plot_path = args.debug_dir / f"{label}_{p.stem}_timeline.png"
-                        _save_timeline_plot(info["timestamps_ms"], act, segs, label, p.stem, plot_path)
-                    except ImportError:
-                        pass
+                    act = video_features.activity(frames, fps=fps)
+                    plot_path = args.debug_dir / f"{label}_{p.stem}_timeline.png"
+                    _save_timeline_plot(ts_ms, act, segs, label, p.stem, plot_path)
 
             avg_pose = np.mean(pose_rates) if pose_rates else 0.0
             avg_hand = np.mean(hand_rates) if hand_rates else 0.0
@@ -227,8 +255,31 @@ def main():
     for label, s in sorted(label_summaries.items()):
         print(f"{label:<12s} {s['count']:<6d} {s['duration_s']:<10.1f} {s['fps']:<6.1f} {s['pose_rate']:<8.0%} {s['hand_rate']:<8.0%} {s['resolutions']}")
 
+    # Segment duration percentiles
+    print("\n================ SIGN SEGMENT DURATION PERCENTILES ================")
+    print(f"{'Label':<12s} {'Segments':<10s} {'p50 (s)':<8s} {'p75 (s)':<8s} {'p90 (s)':<8s} {'p95 (s)':<8s} {'Max (s)'}")
+    print("-" * 75)
+    all_durs = []
+    for label, durs in sorted(all_segments_by_label.items()):
+        all_durs.extend(durs)
+        if durs:
+            p50, p75, p90, p95, mx = np.percentile(durs, [50, 75, 90, 95, 100])
+            print(f"{label:<12s} {len(durs):<10d} {p50:<8.2f} {p75:<8.2f} {p90:<8.2f} {p95:<8.2f} {mx:<8.2f}")
+        else:
+            print(f"{label:<12s} {0:<10d} {'-':<8s} {'-':<8s} {'-':<8s} {'-':<8s} {'-'}")
+
+    if all_durs:
+        overall_p50, overall_p75, overall_p90, overall_p95, overall_max = np.percentile(all_durs, [50, 75, 90, 95, 100])
+        print("-" * 75)
+        print(f"{'OVERALL':<12s} {len(all_durs):<10d} {overall_p50:<8.2f} {overall_p75:<8.2f} {overall_p90:<8.2f} {overall_p95:<8.2f} {overall_max:<8.2f}")
+        calc_window_s = float(np.clip(overall_p90 + 0.4, 1.5, 3.0))
+        print(f"\nCalculated WINDOW_S = clip(p90 + 0.4, 1.5, 3.0) = clip({overall_p90:.2f} + 0.4, 1.5, 3.0) = {calc_window_s:.2f}s")
+        # Check segments > 1.5x WINDOW_S
+        long_segs = [d for d in all_durs if d > 1.5 * calc_window_s]
+        print(f"Segments longer than 1.5 * WINDOW_S ({1.5 * calc_window_s:.2f}s): {len(long_segs)} of {len(all_durs)}")
+
     if all_flagged:
-        print(f"\n[!] Flagged {len(all_flagged)} files with <70% hand detection:")
+        print(f"\n[!] Flagged {len(all_flagged)} files with <70% hand detection across full clip:")
         for lbl, fn, hr in all_flagged:
             print(f"    - {lbl}/{fn}: {hr:.1%} hand detection")
     else:

@@ -26,7 +26,7 @@ HOLDOUT_VIDEO_DIR = BASE_DIR / "videos_test"
 CACHE_DIR = DATA_DIR / "cache"
 CUSTOM_PROCESSED = DATA_DIR / "processed_custom"
 IDLE_LABEL = "idle"
-WINDOW_S = 2.0  # seconds of signal per model input; finalized in Phase 2
+WINDOW_S = 3.0  # seconds of signal per model input; finalized from p90 (2.74s + 0.4s = 3.0s)
 INFER_STRIDE_MS = 100  # classify at most this often (stream time)
 
 # --- Feature layout --------------------------------------------------------
