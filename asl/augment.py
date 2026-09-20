@@ -80,6 +80,38 @@ def jitter(seq, rng, sigma=0.015):
     return (seq + rng.normal(0, sigma, seq.shape)).astype(np.float32)
 
 
+def dropout_hands(seq: np.ndarray, rng: np.random.Generator, p: float = 0.3) -> np.ndarray:
+    """Zero the left and/or right hand slice over random 2-8 frame spans to simulate MediaPipe hand dropouts."""
+    out = seq.copy()
+    T = out.shape[0]
+    if T < 2:
+        return out
+
+    # Left hand dropout
+    if rng.random() < p:
+        span = int(rng.integers(2, min(9, T + 1)))
+        start = int(rng.integers(0, T - span + 1))
+        out[start : start + span, C.LH_SLICE] = 0.0
+
+    # Right hand dropout
+    if rng.random() < p:
+        span = int(rng.integers(2, min(9, T + 1)))
+        start = int(rng.integers(0, T - span + 1))
+        out[start : start + span, C.RH_SLICE] = 0.0
+
+    return out
+
+
+def frame_dropout(seq: np.ndarray, rng: np.random.Generator, p: float = 0.03) -> np.ndarray:
+    """Zero whole frames with probability p."""
+    out = seq.copy()
+    T = out.shape[0]
+    for t in range(T):
+        if rng.random() < p:
+            out[t] = 0.0
+    return out
+
+
 def time_warp(seq, rng, lo=0.8, hi=1.2):
     """Speed the sign up or slow it down, then resample back to T frames."""
     T = seq.shape[0]
@@ -88,10 +120,15 @@ def time_warp(seq, rng, lo=0.8, hi=1.2):
     return up[np.linspace(0, n - 1, T).round().astype(int)].astype(np.float32)
 
 
-def augment_sequence(seq: np.ndarray, rng: np.random.Generator) -> np.ndarray:
+def augment_sequence(
+    seq: np.ndarray,
+    rng: np.random.Generator,
+    p_flip: float = 0.5,
+    p_dropout: bool = True,
+) -> np.ndarray:
     """Apply a random subset of augmentations to one (T, FEATURE_DIM) clip."""
     out = seq.astype(np.float32)
-    if rng.random() < 0.5:
+    if rng.random() < p_flip:
         out = flip_horizontal(out)
     if rng.random() < 0.7:
         out = scale(out, rng)
@@ -103,4 +140,7 @@ def augment_sequence(seq: np.ndarray, rng: np.random.Generator) -> np.ndarray:
         out = time_warp(out, rng)
     if rng.random() < 0.8:
         out = jitter(out, rng)
+    if p_dropout:
+        out = dropout_hands(out, rng)
+        out = frame_dropout(out, rng, p=0.03)
     return out.astype(np.float32)

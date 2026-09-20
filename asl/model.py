@@ -55,11 +55,29 @@ def save_model(model: SignLSTM, labels: list[str], weights_path: Path = C.MODEL_
     Path(labels_path).write_text(json.dumps(labels, indent=2))
 
 
-def load_model(weights_path: Path = C.MODEL_WEIGHTS, labels_path: Path = C.LABELS_JSON,
-               device: str = "cpu") -> tuple[SignLSTM, list[str]]:
+def load_model(
+    weights_path: Path = C.MODEL_WEIGHTS,
+    labels_path: Path = C.LABELS_JSON,
+    device: str = "cpu",
+    expected_num_classes: int | None = None,
+    expected_feature_dim: int = C.FEATURE_DIM,
+) -> tuple[SignLSTM, list[str]]:
     labels = json.loads(Path(labels_path).read_text())
     ckpt = torch.load(weights_path, map_location=device)
-    model = SignLSTM(num_classes=ckpt["num_classes"])
+    num_classes = ckpt.get("num_classes", len(labels))
+    if num_classes != len(labels):
+        raise ValueError(
+            f"Model checkpoint num_classes ({num_classes}) does not match labels.json count ({len(labels)})"
+        )
+    if expected_num_classes is not None and num_classes != expected_num_classes:
+        raise ValueError(
+            f"Expected {expected_num_classes} classes, but model checkpoint has {num_classes}"
+        )
+    model = SignLSTM(num_classes=num_classes, input_dim=expected_feature_dim)
     model.load_state_dict(ckpt["state_dict"])
+    if model.lstm.input_size != expected_feature_dim:
+        raise ValueError(
+            f"Model feature dim ({model.lstm.input_size}) does not match expected ({expected_feature_dim})"
+        )
     model.to(device).eval()
     return model, labels

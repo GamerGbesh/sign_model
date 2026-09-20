@@ -34,6 +34,9 @@ def train_model(
     seed: int = 0,
     verbose: bool = False,
     augment: bool = False,
+    class_weights: torch.Tensor | np.ndarray | None = None,
+    label_smoothing: float = 0.0,
+    p_flip: float = 0.5,
 ) -> dict:
     """Train SignLSTM on (N, T, F) inputs. Returns the best model + metrics.
 
@@ -65,7 +68,11 @@ def train_model(
 
     model = SignLSTM(num_classes=num_classes).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
-    loss_fn = nn.CrossEntropyLoss()
+
+    cw_tensor = None
+    if class_weights is not None:
+        cw_tensor = torch.as_tensor(class_weights, dtype=torch.float32, device=device)
+    loss_fn = nn.CrossEntropyLoss(weight=cw_tensor, label_smoothing=label_smoothing)
 
     best_val = -1.0
     best_state = None
@@ -78,7 +85,7 @@ def train_model(
             bidx = perm[i : i + batch_size]
             xb = X[bidx]
             if augment:
-                xb = np.stack([augment_sequence(s, rng) for s in xb])
+                xb = np.stack([augment_sequence(s, rng, p_flip=p_flip) for s in xb])
             xb_t = torch.tensor(xb, dtype=torch.float32, device=device)
             yb_t = torch.tensor(y[bidx], dtype=torch.int64, device=device)
             opt.zero_grad()
@@ -111,7 +118,7 @@ def train_model(
     }
 
 
-def _save_confusion_png(cm, labels, test_acc):
+def _save_confusion_png(cm, labels, test_acc, out_path: Path | None = None):
     try:
         import matplotlib
         matplotlib.use("Agg")
@@ -129,7 +136,7 @@ def _save_confusion_png(cm, labels, test_acc):
     ax.set_title(f"ASL sign recognizer — test confusion (acc {test_acc:.0%})")
     fig.colorbar(im, fraction=0.046, pad=0.04)
     fig.tight_layout()
-    out = C.BASE_DIR / "docs" / "confusion_matrix.png"
+    out = Path(out_path or (C.BASE_DIR / "docs" / "confusion_matrix.png"))
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=130)
     plt.close(fig)
