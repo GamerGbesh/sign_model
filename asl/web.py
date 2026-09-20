@@ -132,7 +132,6 @@ class Engine:
                 if not ok:
                     cap.release(); cap = None
                     continue
-                frame = cv2.flip(frame, 1)
                 now = time.time()
                 vec, result, pose_present = extractor(frame, timestamp_ms=int((now - start) * 1000))
                 if pose_present:
@@ -150,8 +149,9 @@ class Engine:
                     threading.Thread(target=translate_async,
                                      args=(list(builder.glosses),), daemon=True).start()
 
-                draw_overlay(frame, result)
-                jpeg = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])[1].tobytes()
+                # Mirror only for display
+                display_frame = cv2.flip(frame, 1)
+                jpeg = cv2.imencode(".jpg", display_frame, [cv2.IMWRITE_JPEG_QUALITY, 80])[1].tobytes()
 
                 dt = now - prev
                 prev = now

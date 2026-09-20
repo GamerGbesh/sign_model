@@ -92,18 +92,19 @@ def main():
     import cv2
     import torch
 
-    from .model import load_model
+    from .realtime import StreamingRecognizer
 
     if not C.MODEL_WEIGHTS.exists():
         raise SystemExit(
             f"No trained model at {C.MODEL_WEIGHTS}.\n"
             "Build the dataset and train first:\n"
-            "  python -m asl.dataset\n  python -m asl.train"
+            "  python -m asl.dataset_custom\n  python -m asl.train_custom"
         )
 
     device = "cpu"  # tiny model; CPU avoids per-frame host<->device transfer cost
-    model, labels = load_model(device=device)
-    print(f"Loaded model with {len(labels)} glosses: {labels}")
+    recognizer = StreamingRecognizer(model_dir=C.MODELS_DIR, device=device)
+    labels = recognizer.labels
+    print(f"Loaded StreamingRecognizer with {len(labels)} classes: {labels}")
 
     translator = Translator()
     print("Translator:", "Claude" if translator.available else "offline fallback")
@@ -112,9 +113,6 @@ def main():
     if not cap.isOpened():
         raise SystemExit("Could not open webcam (index 0).")
 
-    extractor = HolisticExtractor(running_mode="VIDEO")
-    buffer: deque[np.ndarray] = deque(maxlen=C.SEQ_LEN)
-    debouncer = Debouncer()
     builder = SentenceBuilder()
 
     # Shared state between the loop and the translation worker thread.
@@ -141,22 +139,15 @@ def main():
             ok, frame = cap.read()
             if not ok:
                 break
-            frame = cv2.flip(frame, 1)  # mirror, so it feels natural
             now = time.time()
             ts_ms = int((now - start) * 1000)
 
-            vec, result, pose_present = extractor(frame, timestamp_ms=ts_ms)
-            if pose_present:
-                buffer.append(vec)
+            # Pass raw unmirrored frame to recognizer
+            res = recognizer.push(frame, t_ms=ts_ms)
+            if res["commit"]:
+                builder.note_commit(res["commit"], now)
 
-            topk = []
-            if len(buffer) == C.SEQ_LEN and pose_present:
-                topk = _softmax_topk(model, buffer, device, k=3)
-                idx, conf = topk[0]
-                committed = debouncer.update(idx, conf, labels)
-                builder.note_commit(committed, now)
-
-            # Auto-finalize after a pause.
+            # Auto-finalize after a pause
             if builder.should_finalize(now):
                 builder.finalized = True
                 threading.Thread(
@@ -166,21 +157,25 @@ def main():
             with state_lock:
                 cur_sentence, cur_translating = sentence_text, translating
 
-            draw_overlay(frame, result)
-            _draw_hud(cv2, frame, debouncer.committed, topk, labels,
-                      len(buffer), fps, builder.glosses, cur_sentence, cur_translating)
+            # Mirrored display frame
+            display_frame = cv2.flip(frame, 1)
+            # Map topk to format for HUD
+            topk_tuples = [(labels.index(l) if l in labels else 0, c) for l, c in res["topk"]]
+            _draw_hud(cv2, display_frame, builder._last_word, topk_tuples, labels,
+                      len(recognizer.buffer), fps, builder.glosses, cur_sentence, cur_translating)
 
             dt = now - prev_t
             prev_t = now
             if dt > 0:
                 fps = 0.9 * fps + 0.1 * (1.0 / dt)
 
-            cv2.imshow("ASL sign recognizer  (space=translate  c=clear  q=quit)", frame)
+            cv2.imshow("ASL sign recognizer  (space=translate  c=clear  q=quit)", display_frame)
             key = cv2.waitKey(1) & 0xFF
             if key in (ord("q"), 27):
                 break
             elif key == ord("c"):
                 builder.clear()
+                recognizer.reset()
                 with state_lock:
                     sentence_text = ""
                     translating = False
@@ -192,7 +187,7 @@ def main():
     finally:
         cap.release()
         cv2.destroyAllWindows()
-        extractor.close()
+        recognizer.close()
 
 
 def _draw_hud(cv2, frame, committed, topk, labels, buf_len, fps,
