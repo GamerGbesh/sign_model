@@ -21,6 +21,14 @@ HOLISTIC_TASK = MODELS_DIR / "holistic_landmarker.task"
 MODEL_WEIGHTS = MODELS_DIR / "sign_lstm.pt"
 LABELS_JSON = MODELS_DIR / "labels.json"
 
+CUSTOM_VIDEO_DIR = BASE_DIR / "videos"
+HOLDOUT_VIDEO_DIR = BASE_DIR / "videos_test"
+CACHE_DIR = DATA_DIR / "cache"
+CUSTOM_PROCESSED = DATA_DIR / "processed_custom"
+IDLE_LABEL = "idle"
+WINDOW_S = 2.0  # seconds of signal per model input; finalized in Phase 2
+INFER_STRIDE_MS = 100  # classify at most this often (stream time)
+
 # --- Feature layout --------------------------------------------------------
 # Per frame: pose (33 x [x,y,z,visibility]) + left hand (21 x [x,y,z]) +
 # right hand (21 x [x,y,z]). Face landmarks are omitted in v1.
