@@ -37,7 +37,7 @@ VOCAB_JSON = VOCAB_DIR / "vocabulary.json"
 VOCAB_SCHEMA = VOCAB_DIR / "vocabulary.schema.json"
 TTS_CACHE_DIR = Path(os.environ.get("AMEGBE_TTS_CACHE_DIR", str(DATA_DIR / "tts_cache")))
 
-SPEECH_MODE = os.environ.get("AMEGBE_SPEECH_MODE", "sentence")  # "word" | "sentence" | "off"
+SPEECH_MODE = os.environ.get("AMEGBE_SPEECH_MODE", "word")  # "word" | "sentence" | "off"
 TTS_VOICE = os.environ.get("AMEGBE_TTS_VOICE", "auto")
 TTS_LANGUAGE = os.environ.get("AMEGBE_TTS_LANGUAGE", "twi")
 TTS_MODEL_DIR = os.environ.get("AMEGBE_TTS_MODEL_DIR", None)
