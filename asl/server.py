@@ -1,14 +1,17 @@
-"""FastAPI WebSocket server for real-time SignSpeak recognition.
+"""FastAPI WebSocket server for real-time Amegbe recognition and Twi speech.
 
-Exposes REST endpoints (/health, /meta, /demo) and a high-performance binary
-WebSocket endpoint (/ws/recognize) with single-slot frame queue, backpressure handling,
-session limiting, origin validation, and strictly in-memory processing.
+Exposes REST endpoints (/health, /meta, /demo, /audio/{key}.wav, /vocab, /vocab/reload,
+/tts/voices, /vocab/{gloss}/audio) and a high-performance binary WebSocket endpoint
+(/ws/recognize) with single-slot frame queue, backpressure handling, session limiting,
+and SpeechOrchestrator integration.
 """
 from __future__ import annotations
 
 import asyncio
 import json
+import logging
 import os
+import re
 import struct
 import time
 from contextlib import asynccontextmanager
@@ -25,16 +28,25 @@ from fastapi.staticfiles import StaticFiles
 from . import config as C
 from .model import SignLSTM, load_model
 from .realtime import StreamingRecognizer
+from .speech import SpeechOrchestrator
+from .tts import TwiTTS
+from .vocab import VocabularyStore
+
+logger = logging.getLogger(__name__)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 MAX_FRAME_BYTES = 512 * 1024  # 512 KB
 SESSION_TIMEOUT_S = 60.0
 DEFAULT_MAX_SESSIONS = 4
+AUDIO_KEY_RE = re.compile(r"^[0-9a-f]{40}$")
 
 _shared_model: Optional[SignLSTM] = None
 _labels: list[str] = []
 _model_meta: dict = {}
 _active_sessions: Set[int] = set()
+
+_shared_vocab_store: Optional[VocabularyStore] = None
+_shared_tts: Optional[TwiTTS] = None
 
 
 def get_shared_model():
@@ -49,14 +61,31 @@ def get_shared_model():
     return _shared_model, _labels, _model_meta
 
 
+def get_vocab_store() -> VocabularyStore:
+    global _shared_vocab_store
+    if _shared_vocab_store is None:
+        _shared_vocab_store = VocabularyStore()
+    return _shared_vocab_store
+
+
+def get_tts() -> TwiTTS:
+    global _shared_tts
+    if _shared_tts is None:
+        _shared_tts = TwiTTS()
+    return _shared_tts
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if C.MODEL_WEIGHTS.exists() and C.LABELS_JSON.exists():
         get_shared_model()
+    get_vocab_store()
     yield
+    if _shared_tts:
+        _shared_tts.stop()
 
 
-app = FastAPI(title="SignSpeak Real-Time API", lifespan=lifespan)
+app = FastAPI(title="Amegbe Real-Time Sign & Speech API", lifespan=lifespan)
 
 # Configure CORS
 dev_mode = os.environ.get("DEV", "0") == "1"
@@ -88,6 +117,7 @@ def health():
     _, labels, meta = get_shared_model()
     return {
         "status": "ok",
+        "app": "amegbe",
         "labels": labels,
         "window_s": meta.get("window_s", C.WINDOW_S),
     }
@@ -96,7 +126,6 @@ def health():
 @app.get("/meta")
 def meta():
     _, _, m = get_shared_model()
-    # Return public parts of model_meta.json
     public_fields = [
         "labels", "idle_label", "seq_len", "feature_dim", "window_s",
         "infer_stride_ms", "conf_threshold", "debounce_n", "metrics", "created_at"
@@ -109,7 +138,64 @@ def demo():
     demo_file = STATIC_DIR / "live.html"
     if not demo_file.exists():
         raise HTTPException(status_code=404, detail="Demo page not found")
-    return FileResponse(demo_file)
+    return FileResponse(str(demo_file))
+
+
+@app.get("/audio/{key}.wav")
+def get_audio(key: str):
+    if not AUDIO_KEY_RE.match(key):
+        raise HTTPException(status_code=400, detail="Invalid audio key format")
+    audio_path = C.TTS_CACHE_DIR / f"{key}.wav"
+    if not audio_path.exists() or not audio_path.is_file():
+        raise HTTPException(status_code=404, detail="Audio file not found")
+    return FileResponse(
+        str(audio_path),
+        media_type="audio/wav",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
+    )
+
+
+@app.get("/vocab")
+def get_vocab():
+    snap = get_vocab_store().get_snapshot()
+    return {
+        "version": snap.version,
+        "dialect": snap.dialect,
+        "defaults": snap.defaults,
+        "words": snap.enabled_words,
+        "phrases": snap.enabled_phrases,
+    }
+
+
+@app.post("/vocab/reload")
+def reload_vocab():
+    store = get_vocab_store()
+    ok, errors = store.reload(force=True)
+    snap = store.get_snapshot()
+    return {
+        "ok": ok,
+        "errors": errors,
+        "count": len(snap.words),
+    }
+
+
+@app.get("/tts/voices")
+def get_voices():
+    return get_tts().get_voices()
+
+
+@app.get("/vocab/{gloss}/audio")
+def get_vocab_audio(gloss: str):
+    store = get_vocab_store()
+    snap = store.get_snapshot()
+    entry = snap.words.get(gloss)
+    if not entry or not entry.get("twi"):
+        raise HTTPException(status_code=404, detail=f"No Twi vocabulary entry for gloss '{gloss}'")
+    tts = get_tts()
+    res = tts.speak(entry["twi"], voice=snap.default_voice, language="twi", audio_override=entry.get("audio"))
+    if not res or not res.path.exists():
+        raise HTTPException(status_code=500, detail="Audio generation failed")
+    return FileResponse(str(res.path), media_type="audio/wav")
 
 
 # Mount static assets
@@ -119,14 +205,12 @@ if STATIC_DIR.exists():
 
 @app.websocket("/ws/recognize")
 async def ws_recognize(websocket: WebSocket):
-    # Origin verification
     origin = websocket.headers.get("origin")
     if not dev_mode and "*" not in allowed_origins and origin:
         if origin not in allowed_origins:
             await websocket.close(code=1008, reason="Origin not allowed")
             return
 
-    # Session limit check
     max_sessions = int(os.environ.get("MAX_SESSIONS", DEFAULT_MAX_SESSIONS))
     if len(_active_sessions) >= max_sessions:
         await websocket.close(code=1013, reason="Max concurrent sessions reached")
@@ -146,16 +230,25 @@ async def ws_recognize(websocket: WebSocket):
         infer_stride_ms=meta_data.get("infer_stride_ms", C.INFER_STRIDE_MS),
     )
 
+    orchestrator = SpeechOrchestrator(
+        vocab_store=get_vocab_store(),
+        tts=get_tts(),
+        mode=C.SPEECH_MODE,
+        voice=C.TTS_VOICE,
+    )
+
     # Initial ready handshake
     await websocket.send_json({
         "type": "ready",
+        "app": "amegbe",
         "labels": labels,
         "window_s": recognizer.window_s,
         "recommended_fps": 15,
         "max_width": 480,
+        "speech_mode": orchestrator.mode,
+        "voice": orchestrator.voice,
     })
 
-    # Single-slot backpressure queue: keeps only the newest unconsumed frame
     latest_frame: Optional[Tuple[float, bytes]] = None
     frame_ready = asyncio.Event()
     stop_event = asyncio.Event()
@@ -173,29 +266,49 @@ async def ws_recognize(websocket: WebSocket):
                 if "text" in msg and msg["text"]:
                     try:
                         data = json.loads(msg["text"])
-                        if data.get("cmd") == "reset":
+                        cmd = data.get("cmd") or data.get("type")
+                        if cmd == "reset":
                             recognizer.reset()
+                            orchestrator.clear()
                             await websocket.send_json({"type": "reset", "phrase": []})
-                    except Exception:
-                        pass
+                        elif cmd == "config":
+                            if "speech_mode" in data:
+                                orchestrator.set_mode(data["speech_mode"])
+                            if "voice" in data:
+                                orchestrator.set_voice(data["voice"])
+                            await websocket.send_json({
+                                "type": "config_ack",
+                                "speech_mode": orchestrator.mode,
+                                "voice": orchestrator.voice,
+                            })
+                        elif cmd == "speak":
+                            sp_events = orchestrator.speak_now()
+                            for ev in sp_events:
+                                await websocket.send_json(ev)
+                        elif cmd == "clear":
+                            orchestrator.clear()
+                            await websocket.send_json({"type": "clear_ack"})
+                        elif cmd == "ack_audio":
+                            if "key" in data:
+                                orchestrator.ack_audio(data["key"])
+                    except Exception as e:
+                        logger.warning("Error processing text ws message: %s", e)
                 elif "bytes" in msg and msg["bytes"]:
                     bdata = msg["bytes"]
                     if len(bdata) > MAX_FRAME_BYTES:
                         await websocket.close(code=1009, reason="Frame exceeds 512KB limit")
                         break
                     if len(bdata) >= 8:
-                        # Big-endian float64 timestamp in ms
                         t_ms = struct.unpack(">d", bdata[:8])[0]
                         jpeg_bytes = bdata[8:]
-                        # Single-slot queue: overwrite with newest frame
                         latest_frame = (t_ms, jpeg_bytes)
                         frame_ready.set()
                 elif msg.get("type") == "websocket.disconnect":
                     break
         except WebSocketDisconnect:
             pass
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("WS reader error: %s", e)
         finally:
             stop_event.set()
             frame_ready.set()
@@ -205,7 +318,15 @@ async def ws_recognize(websocket: WebSocket):
         last_sent_ms = 0.0
         try:
             while not stop_event.is_set():
-                await frame_ready.wait()
+                try:
+                    await asyncio.wait_for(frame_ready.wait(), timeout=0.1)
+                except asyncio.TimeoutError:
+                    # Timeout check: tick sentence orchestrator on idle pause
+                    tick_events = orchestrator.tick(t_s=time.time())
+                    for ev in tick_events:
+                        await websocket.send_json(ev)
+                    continue
+
                 frame_ready.clear()
                 if stop_event.is_set():
                     break
@@ -215,7 +336,7 @@ async def ws_recognize(websocket: WebSocket):
                     continue
 
                 t_ms, jpeg_bytes = item
-                # Decode JPEG in thread pool (never write to disk - privacy strictly preserved)
+
                 def decode_and_push():
                     arr = np.frombuffer(jpeg_bytes, dtype=np.uint8)
                     frame_bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
@@ -231,17 +352,30 @@ async def ws_recognize(websocket: WebSocket):
                 is_commit = res["commit"] is not None
                 time_to_send = (now_ms - last_sent_ms) >= 100.0
 
-                # Send immediately on commit, or at most every 100 ms
+                # Check sentence mode tick
+                tick_events = orchestrator.tick(t_s=now_ms / 1000.0)
+                for ev in tick_events:
+                    await websocket.send_json(ev)
+
+                # Process commit speech
+                if is_commit:
+                    commit_events = orchestrator.on_commit(res["commit"], t_s=now_ms / 1000.0)
+                    for ev in commit_events:
+                        await websocket.send_json(ev)
+
                 if is_commit or time_to_send:
                     last_sent_ms = now_ms
+                    phrase_data = res.get("phrase", [])
+                    enriched_phrase = orchestrator.enrich_phrase_event({"words": phrase_data}) if phrase_data else None
                     payload = {
                         "type": "prediction",
                         "server_ms": now_ms,
                         **res,
+                        "twi_phrase": enriched_phrase["twi"] if enriched_phrase else "",
                     }
                     await websocket.send_json(payload)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("WS worker error: %s", e)
         finally:
             stop_event.set()
 
