@@ -1,101 +1,101 @@
 {
   "$schema": "./vocabulary.schema.json",
   "version": 1,
-  "dialect": "",
+  "dialect": "Twi",
   "defaults": {
     "voice": "auto",
     "unknown_word_policy": "skip"
   },
   "words": {
     "friend": {
-      "enabled": false,
+      "enabled": true,
       "english": "friend",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "adamfo",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Also written adamfoɔ. Yɔnkoɔ is another valid word for friend/companion."
     },
     "goodbye": {
-      "enabled": false,
+      "enabled": true,
       "english": "goodbye",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "nante yie",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Literally 'walk well'. Other forms include baabae and nkyirioo."
     },
     "hello": {
-      "enabled": false,
+      "enabled": true,
       "english": "hello",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "akwaaba",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Akwaaba literally means 'welcome' and is commonly used as a greeting. For conversational greetings, ɛte sɛn?, wo ho te sɛn?, or mekyea wo oo may be more natural depending on context."
     },
     "help": {
-      "enabled": false,
+      "enabled": true,
       "english": "help",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "boa",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Boa is the verb 'to help'. The noun 'help' is mmoa."
     },
     "name": {
-      "enabled": false,
+      "enabled": true,
       "english": "name",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "edin",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Edin is the noun 'name'. The verb 'to name' is bɔ din. For 'my name is', use the phrase 'me din de ...'."
     },
     "no": {
-      "enabled": false,
+      "enabled": true,
       "english": "no",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "dabi",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Use as the standalone negative response 'no'. Sentence-level negation in Twi generally requires a negative verb form rather than simply replacing 'no' with dabi."
     },
     "please": {
-      "enabled": false,
+      "enabled": true,
       "english": "please",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "mepa wo kyɛw",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Also commonly written mepaakyɛw. Mesrɛ wo is another valid form meaning 'please/I beg you'."
     },
     "sorry": {
-      "enabled": false,
+      "enabled": true,
       "english": "sorry",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "kafra",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Kafra is used as an exclamation meaning 'sorry'. Kosɛ is another listed form. Context may require a fuller expression."
     },
     "thank_you": {
-      "enabled": false,
+      "enabled": true,
       "english": "thank you",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "medaase",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Common Twi expression for 'thank you'."
     },
     "yes": {
-      "enabled": false,
+      "enabled": true,
       "english": "yes",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "aane",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Aane is the standard affirmative response. Yiw is also listed as a valid form."
     }
   },
   "phrases": []
