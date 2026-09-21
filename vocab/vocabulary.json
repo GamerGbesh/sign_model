@@ -96,6 +96,168 @@
       "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
       "notes": "Aane is the standard affirmative response. Yiw is also listed as a valid form."
+    },
+    "bad": {
+      "enabled": false,
+      "english": "bad",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "before": {
+      "enabled": false,
+      "english": "before",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "book": {
+      "enabled": false,
+      "english": "book",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "chair": {
+      "enabled": false,
+      "english": "chair",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "drink": {
+      "enabled": false,
+      "english": "drink",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "fine": {
+      "enabled": false,
+      "english": "fine",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "food": {
+      "enabled": false,
+      "english": "food",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "go": {
+      "enabled": false,
+      "english": "go",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "good": {
+      "enabled": false,
+      "english": "good",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "good_evening": {
+      "enabled": false,
+      "english": "good evening",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "happy": {
+      "enabled": false,
+      "english": "happy",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "home": {
+      "enabled": false,
+      "english": "home",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "i_m_fine": {
+      "enabled": false,
+      "english": "I'm fine",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "love": {
+      "enabled": false,
+      "english": "love",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "school": {
+      "enabled": false,
+      "english": "school",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "walk": {
+      "enabled": false,
+      "english": "walk",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "water": {
+      "enabled": false,
+      "english": "water",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "who": {
+      "enabled": false,
+      "english": "who",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
     }
   },
   "phrases": []
