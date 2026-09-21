@@ -27,6 +27,7 @@ dependencies = [
     "httpx>=0.27",
     # Tests
     "pytest>=8.0",
+    "stable-twi-tts[twi]>=0.2.1",
 ]
 
 [build-system]
