@@ -28,6 +28,7 @@ dependencies = [
     # Tests
     "pytest>=8.0",
     "stable-twi-tts[twi]>=0.2.1",
+    "jsonschema>=4.26.0",
 ]
 
 [build-system]

@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SignSpeakVocabulary",
+  "description": "Schema for SignSpeak / Amegbe vocabulary mapping ASL glosses to Twi and English.",
+  "type": "object",
+  "required": ["version", "dialect", "defaults", "words", "phrases"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "dialect": {
+      "type": "string",
+      "description": "Twi dialect (e.g. Akuapem, Asante) set by the linguist or speaker."
+    },
+    "defaults": {
+      "type": "object",
+      "required": ["voice", "unknown_word_policy"],
+      "additionalProperties": false,
+      "properties": {
+        "voice": {
+          "type": "string",
+          "default": "auto"
+        },
+        "unknown_word_policy": {
+          "type": "string",
+          "enum": ["skip", "english"],
+          "default": "skip"
+        }
+      }
+    },
+    "words": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z0-9_ -]+$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["enabled", "english", "twi", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "english": {
+            "type": "string"
+          },
+          "twi": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["unverified", "verified"]
+          },
+          "verified_by": {
+            "type": ["string", "null"]
+          },
+          "audio": {
+            "type": ["string", "null"]
+          },
+          "notes": {
+            "type": "string",
+            "default": ""
+          }
+        }
+      }
+    },
+    "phrases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "match", "twi", "enabled"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "match": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9_ -]+$"
+            },
+            "minItems": 2
+          },
+          "twi": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["unverified", "verified"]
+          },
+          "audio": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    }
+  }
+}

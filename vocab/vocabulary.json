@@ -1,0 +1,102 @@
+{
+  "$schema": "./vocabulary.schema.json",
+  "version": 1,
+  "dialect": "",
+  "defaults": {
+    "voice": "auto",
+    "unknown_word_policy": "skip"
+  },
+  "words": {
+    "friend": {
+      "enabled": false,
+      "english": "friend",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "goodbye": {
+      "enabled": false,
+      "english": "goodbye",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "hello": {
+      "enabled": false,
+      "english": "hello",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "help": {
+      "enabled": false,
+      "english": "help",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "name": {
+      "enabled": false,
+      "english": "name",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "no": {
+      "enabled": false,
+      "english": "no",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "please": {
+      "enabled": false,
+      "english": "please",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "sorry": {
+      "enabled": false,
+      "english": "sorry",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "thank_you": {
+      "enabled": false,
+      "english": "thank you",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    },
+    "yes": {
+      "enabled": false,
+      "english": "yes",
+      "twi": "",
+      "status": "unverified",
+      "verified_by": null,
+      "audio": null,
+      "notes": ""
+    }
+  },
+  "phrases": []
+}
