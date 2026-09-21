@@ -177,3 +177,49 @@ def test_out_of_order_timestamps_dropped():
     res = recognizer.push(dummy_frame, 550)
     # Should not break internal state; last_t_ms stays 600
     assert recognizer.last_t_ms == 600
+
+
+def test_cooldown_real_time_accumulation():
+    """Verifies that at 30 FPS (~33ms/frame), 400ms of real-time idle satisfies the cooldown."""
+    labels = ["idle", "hello", "yes"]
+    model = StubModel(num_classes=3)
+    model.target_class = 1  # "hello"
+    extractor = StubExtractor(hand_present=True)
+
+    recognizer = StreamingRecognizer(
+        extractor=extractor,
+        model=model,
+        labels=labels,
+        debounce_n=2,
+        infer_stride_ms=100,
+        window_s=1.0,
+    )
+    dummy_frame = np.zeros((100, 100, 3), dtype=np.uint8)
+
+    # Warm up buffer with 30 fps idle frames
+    model.target_class = 0
+    t = 0
+    for _ in range(30):
+        t += 33
+        recognizer.push(dummy_frame, t)
+
+    # Now sign "hello" and commit
+    model.target_class = 1
+    r = None
+    for _ in range(10):
+        t += 33
+        r = recognizer.push(dummy_frame, t)
+        if r["commit"] == "hello":
+            break
+    assert r["commit"] == "hello"
+    assert recognizer.cooldown_satisfied is False
+
+    # Now simulate ~550ms of real-time idle at 30 fps (17 frames)
+    model.target_class = 0  # idle
+    for _ in range(17):
+        t += 33
+        recognizer.push(dummy_frame, t)
+
+    # Cooldown should now be satisfied because ~550ms real time elapsed
+    assert recognizer.cooldown_satisfied is True
+

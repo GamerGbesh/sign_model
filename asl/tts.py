@@ -136,13 +136,20 @@ class PiperStableTwiBackend:
             norm_text = unicodedata.normalize("NFC", text.strip())
             synthesis = self._tts.synthesize(norm_text, voice=voice, language=language)
             # Write out to in-memory WAV
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-                tmp_path = tmp.name
-            synthesis.save(tmp_path)
-            with open(tmp_path, "rb") as f:
-                wav_bytes = f.read()
-            os.unlink(tmp_path)
-            return wav_bytes, synthesis.sample_rate, synthesis.duration
+            tmp_path = None
+            try:
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+                    tmp_path = tmp.name
+                synthesis.save(tmp_path)
+                with open(tmp_path, "rb") as f:
+                    wav_bytes = f.read()
+                return wav_bytes, synthesis.sample_rate, synthesis.duration
+            finally:
+                if tmp_path and os.path.exists(tmp_path):
+                    try:
+                        os.unlink(tmp_path)
+                    except OSError:
+                        pass
         except Exception as e:
             logger.warning("TTS synthesis failed for %r (voice=%s, lang=%s): %s", text, voice, language, e)
             return b"", 22050, 0.0

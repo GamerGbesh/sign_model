@@ -658,7 +658,7 @@ def cmd_audio_build(store: VocabularyStore, voice: Optional[str] = None, force: 
 
 def cmd_audio_clean(store: VocabularyStore):
     try:
-        from .tts import get_cache_key
+        from .tts import get_cache_key, TwiTTS
     except (ImportError, ModuleNotFoundError):
         print("TTS module not available.")
         return 1
@@ -667,13 +667,31 @@ def cmd_audio_clean(store: VocabularyStore):
         print("No cache directory found.")
         return 0
 
+    # Collect all available voices so alternate-voice caches are preserved
+    available_voices = {snap.default_voice, "twi-6", "twi-1"}
+    try:
+        tts = TwiTTS(start_worker=False)
+        voices_info = tts.get_voices()
+        if "voices" in voices_info:
+            for v in voices_info["voices"]:
+                if isinstance(v, dict) and "name" in v:
+                    available_voices.add(v["name"])
+        if "tiers" in voices_info:
+            for tier_list in voices_info["tiers"].values():
+                if isinstance(tier_list, list):
+                    for vname in tier_list:
+                        available_voices.add(vname)
+    except Exception:
+        pass
+
     valid_keys = set()
-    for w in snap.words.values():
-        if w.get("twi"):
-            valid_keys.add(f"{get_cache_key(w['twi'], voice=snap.default_voice, language='twi')}.wav")
-    for p in snap.phrases:
-        if p.get("twi"):
-            valid_keys.add(f"{get_cache_key(p['twi'], voice=snap.default_voice, language='twi')}.wav")
+    for vname in available_voices:
+        for w in snap.words.values():
+            if w.get("twi"):
+                valid_keys.add(f"{get_cache_key(w['twi'], voice=vname, language='twi')}.wav")
+        for p in snap.phrases:
+            if p.get("twi"):
+                valid_keys.add(f"{get_cache_key(p['twi'], voice=vname, language='twi')}.wav")
 
     removed = 0
     for wav_file in C.TTS_CACHE_DIR.glob("*.wav"):

@@ -225,7 +225,7 @@ async def ws_recognize(websocket: WebSocket):
         model=shared_model,
         labels=labels,
         window_s=meta_data.get("window_s", C.WINDOW_S),
-        conf_threshold=meta_data.get("conf_threshold", 0.40),
+        conf_threshold=meta_data.get("conf_threshold", C.CONF_THRESHOLD),
         debounce_n=meta_data.get("debounce_n", 4),
         infer_stride_ms=meta_data.get("infer_stride_ms", C.INFER_STRIDE_MS),
     )
@@ -282,7 +282,7 @@ async def ws_recognize(websocket: WebSocket):
                                 "voice": orchestrator.voice,
                             })
                         elif cmd == "speak":
-                            sp_events = orchestrator.speak_now()
+                            sp_events = await asyncio.to_thread(orchestrator.speak_now)
                             for ev in sp_events:
                                 await websocket.send_json(ev)
                         elif cmd == "clear":
@@ -322,7 +322,7 @@ async def ws_recognize(websocket: WebSocket):
                     await asyncio.wait_for(frame_ready.wait(), timeout=0.1)
                 except asyncio.TimeoutError:
                     # Timeout check: tick sentence orchestrator on idle pause
-                    tick_events = orchestrator.tick(t_s=time.time())
+                    tick_events = await asyncio.to_thread(orchestrator.tick, time.time())
                     for ev in tick_events:
                         await websocket.send_json(ev)
                     continue
@@ -353,13 +353,13 @@ async def ws_recognize(websocket: WebSocket):
                 time_to_send = (now_ms - last_sent_ms) >= 100.0
 
                 # Check sentence mode tick
-                tick_events = orchestrator.tick(t_s=now_ms / 1000.0)
+                tick_events = await asyncio.to_thread(orchestrator.tick, now_ms / 1000.0)
                 for ev in tick_events:
                     await websocket.send_json(ev)
 
                 # Process commit speech
                 if is_commit:
-                    commit_events = orchestrator.on_commit(res["commit"], t_s=now_ms / 1000.0)
+                    commit_events = await asyncio.to_thread(orchestrator.on_commit, res["commit"], now_ms / 1000.0)
                     for ev in commit_events:
                         await websocket.send_json(ev)
 

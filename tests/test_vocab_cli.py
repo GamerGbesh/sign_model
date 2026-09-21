@@ -18,6 +18,7 @@ from asl.vocab import (
     cmd_export_review,
     cmd_validate,
     cmd_status,
+    cmd_audio_clean,
 )
 from asl import config as C
 
@@ -139,3 +140,34 @@ def test_cli_status_and_list(cli_store, capsys):
     out = capsys.readouterr().out
     assert "AMEGBE VOCABULARY" in out
     assert "friend" in out
+
+
+def test_cli_audio_clean_preserves_alternate_voices(cli_store, tmp_path, monkeypatch):
+    from asl.tts import get_cache_key
+    cache_dir = tmp_path / "tts_cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(C, "TTS_CACHE_DIR", cache_dir)
+
+    cmd_add_word(cli_store, "friend", "adamfo")
+
+    # Create cached WAV for default voice (twi-6)
+    k_default = get_cache_key("adamfo", voice="twi-6", language="twi")
+    f_default = cache_dir / f"{k_default}.wav"
+    f_default.write_bytes(b"RIFFdummy")
+
+    # Create cached WAV for alternate voice (twi-1)
+    k_alt = get_cache_key("adamfo", voice="twi-1", language="twi")
+    f_alt = cache_dir / f"{k_alt}.wav"
+    f_alt.write_bytes(b"RIFFdummy")
+
+    # Create orphaned WAV
+    f_orphan = cache_dir / "orphan_1234567890.wav"
+    f_orphan.write_bytes(b"RIFFdummy")
+
+    ret = cmd_audio_clean(cli_store)
+    assert ret == 0
+
+    assert f_default.exists(), "Default voice audio should be preserved"
+    assert f_alt.exists(), "Alternate voice audio should be preserved"
+    assert not f_orphan.exists(), "Orphaned audio should be removed"
+
