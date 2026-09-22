@@ -32,7 +32,7 @@
       "status": "verified",
       "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": "Akwaaba literally means 'welcome' and is commonly used as a greeting. For conversational greetings, ɛte sɛn?, wo ho te sɛn?, or mekyea wo oo may be more natural depending on context."
+      "notes": "Akwaaba means 'welcome' and is commonly used as a greeting. Other conversational greetings include ɛte sɛn?, wo ho te sɛn?, and mekyea wo oo."
     },
     "help": {
       "enabled": true,
@@ -50,7 +50,7 @@
       "status": "verified",
       "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": "Edin is the noun 'name'. The verb 'to name' is bɔ din. For 'my name is', use the phrase 'me din de ...'."
+      "notes": "Edin means 'name'. The verb 'to name' is bɔ din. For 'my name is', use 'me din de ...'."
     },
     "no": {
       "enabled": true,
@@ -59,7 +59,7 @@
       "status": "verified",
       "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": "Use as the standalone negative response 'no'. Sentence-level negation in Twi generally requires a negative verb form rather than simply replacing 'no' with dabi."
+      "notes": "Standalone negative response meaning 'no'. Sentence-level negation requires appropriate Twi grammar."
     },
     "please": {
       "enabled": true,
@@ -68,7 +68,7 @@
       "status": "verified",
       "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": "Also commonly written mepaakyɛw. Mesrɛ wo is another valid form meaning 'please/I beg you'."
+      "notes": "Also commonly written mepaakyɛw. Mesrɛ wo is another valid expression meaning 'please/I beg you'."
     },
     "sorry": {
       "enabled": true,
@@ -77,7 +77,7 @@
       "status": "verified",
       "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": "Kafra is used as an exclamation meaning 'sorry'. Kosɛ is another listed form. Context may require a fuller expression."
+      "notes": "Kafra is commonly used as an expression of apology or sympathy. Context may require a fuller expression."
     },
     "thank_you": {
       "enabled": true,
@@ -86,7 +86,7 @@
       "status": "verified",
       "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": "Common Twi expression for 'thank you'."
+      "notes": "Common Twi expression meaning 'thank you'."
     },
     "yes": {
       "enabled": true,
@@ -95,169 +95,169 @@
       "status": "verified",
       "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": "Aane is the standard affirmative response. Yiw is also listed as a valid form."
+      "notes": "Aane is the standard affirmative response. Yiw is also a valid form."
     },
     "bad": {
-      "enabled": false,
+      "enabled": true,
       "english": "bad",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "bɔne",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Bɔne means bad, evil, or wrong depending on context."
     },
     "before": {
-      "enabled": false,
+      "enabled": true,
       "english": "before",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "ansa",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Ansa means 'before' or 'earlier'. Context may require 'ansa na' in a sentence."
     },
     "book": {
-      "enabled": false,
+      "enabled": true,
       "english": "book",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "nwoma",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Nwoma means book or written material."
     },
     "chair": {
-      "enabled": false,
+      "enabled": true,
       "english": "chair",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "akonnwa",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Akonnwa means chair or seat."
     },
     "drink": {
-      "enabled": false,
+      "enabled": true,
       "english": "drink",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "nom",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Nom is the verb 'to drink'. Nsa means alcoholic drink/liquor, so do not use nsa as the general translation of the verb 'drink'."
     },
     "fine": {
-      "enabled": false,
+      "enabled": true,
       "english": "fine",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "yɛ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Fine is context-dependent. For 'I'm fine', use 'me ho yɛ' or the fuller 'me ho yɛ'. Do not treat yɛ as a universal translation of every English use of 'fine'."
     },
     "food": {
-      "enabled": false,
+      "enabled": true,
       "english": "food",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "aduane",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Aduane means food or a meal."
     },
     "go": {
-      "enabled": false,
+      "enabled": true,
       "english": "go",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "kɔ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Kɔ is the verb 'to go'."
     },
     "good": {
-      "enabled": false,
+      "enabled": true,
       "english": "good",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "yɛ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Context-dependent. Yɛ can mean 'be good' or 'be okay'. 'Eye'/'ɛyɛ' may appear in sentence forms."
     },
     "good_evening": {
-      "enabled": false,
+      "enabled": true,
       "english": "good evening",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "maadwo",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Maadwo is the standard evening greeting."
     },
     "happy": {
-      "enabled": false,
+      "enabled": true,
       "english": "happy",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "ani agye",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Ani agye expresses being happy or glad. The exact construction can change depending on the sentence."
     },
     "home": {
-      "enabled": false,
+      "enabled": true,
       "english": "home",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "fie",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Fie means home or house depending on context."
     },
     "i_m_fine": {
-      "enabled": false,
+      "enabled": true,
       "english": "I'm fine",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "me ho yɛ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Common expression meaning 'I'm fine' or 'I'm okay'."
     },
     "love": {
-      "enabled": false,
+      "enabled": true,
       "english": "love",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "dɔ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Dɔ means to love. Odɔ means love/affection as a noun in some contexts."
     },
     "school": {
-      "enabled": false,
+      "enabled": true,
       "english": "school",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "sukuu",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Sukuu means school."
     },
     "walk": {
-      "enabled": false,
+      "enabled": true,
       "english": "walk",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "nante",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Nante means to walk. It also appears in the expression 'nante yie' meaning 'goodbye/literally walk well'."
     },
     "water": {
-      "enabled": false,
+      "enabled": true,
       "english": "water",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "nsuo",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Nsuo means water."
     },
     "who": {
-      "enabled": false,
+      "enabled": true,
       "english": "who",
-      "twi": "",
-      "status": "unverified",
-      "verified_by": null,
+      "twi": "hwan",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
       "audio": null,
-      "notes": ""
+      "notes": "Hwan means 'who'. For example, 'Hwan ne no?' means 'Who is he/she?'"
     }
   },
   "phrases": []
