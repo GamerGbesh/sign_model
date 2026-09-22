@@ -30,7 +30,7 @@ def train_model(
     epochs: int = 80,
     batch_size: int = 16,
     lr: float = 1e-3,
-    device: str = "cpu",
+    device: str | None = None,
     seed: int = 0,
     verbose: bool = False,
     augment: bool = False,
@@ -43,6 +43,9 @@ def train_model(
     If no validation set is given, a small slice of X is held out so we always
     report an honest val number.
     """
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+
     torch.manual_seed(seed)
     rng = np.random.default_rng(seed)
 

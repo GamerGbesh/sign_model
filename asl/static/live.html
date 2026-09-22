@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SignSpeak Live Recognition</title>
+  <title>Amegbe — Live Sign Recognition & Twi Speech</title>
   <style>
     :root {
-      --bg: #0f141c;
-      --card-bg: #1a2230;
-      --border: #2d3748;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
+      --bg: #0b0f17;
+      --card-bg: #141c2b;
+      --border: #232f42;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-gold: #f59e0b;
       --success: #10b981;
-      --text: #f3f4f6;
-      --text-muted: #9ca3af;
+      --text: #f9fafb;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --unverified-badge: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body {
@@ -23,36 +26,42 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px;
+      padding: 20px;
     }
     header {
       width: 100%;
-      max-width: 900px;
+      max-width: 960px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
-    h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+    .brand-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+    h1 { font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+    .subtitle { font-size: 0.85rem; color: var(--text-muted); }
     .status-badge {
       font-size: 0.85rem;
       padding: 4px 12px;
       border-radius: 9999px;
-      background: #374151;
+      background: #1e293b;
       color: var(--text-muted);
       font-weight: 500;
     }
-    .status-badge.connected { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-    .status-badge.active { background: rgba(59, 130, 246, 0.2); color: var(--accent); }
+    .status-badge.connected { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .status-badge.active { background: rgba(37, 99, 235, 0.2); color: #60a5fa; }
 
     .main-grid {
       display: grid;
-      grid-template-columns: 1fr 340px;
+      grid-template-columns: 1fr 360px;
       gap: 20px;
       width: 100%;
-      max-width: 900px;
+      max-width: 960px;
     }
-    @media (max-width: 768px) {
+    @media (max-width: 800px) {
       .main-grid { grid-template-columns: 1fr; }
     }
 
@@ -74,56 +83,94 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      /* Mirrored for display only */
       transform: scaleX(-1);
     }
     .video-controls {
       display: flex;
       gap: 10px;
-      padding: 16px;
+      padding: 14px;
       background: var(--card-bg);
       border-top: 1px solid var(--border);
     }
     button {
       flex: 1;
-      padding: 10px 16px;
+      padding: 10px 14px;
       border-radius: 8px;
       border: none;
       font-weight: 600;
+      font-size: 0.9rem;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.15s;
     }
     .btn-primary { background: var(--accent); color: white; }
     .btn-primary:hover { background: var(--accent-hover); }
-    .btn-secondary { background: #374151; color: var(--text); }
-    .btn-secondary:hover { background: #4b5563; }
-    .btn-danger { background: #ef4444; color: white; }
+    .btn-secondary { background: #1e293b; color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #334155; }
+    .btn-gold { background: #b45309; color: white; }
+    .btn-gold:hover { background: #d97706; }
+    .btn-danger { background: var(--danger); color: white; }
     .btn-danger:hover { background: #dc2626; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Speech Controls Bar */
+    .speech-bar {
+      margin-top: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      width: 100%;
+      max-width: 960px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .control-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    select {
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
 
     .side-panel {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 16px;
+      padding: 14px 16px;
     }
     .card-title {
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
-      margin-bottom: 10px;
-      font-weight: 600;
+      margin-bottom: 8px;
+      font-weight: 700;
     }
 
     .detected-word-container {
       text-align: center;
-      padding: 12px 0;
+      padding: 8px 0;
     }
     .detected-word {
       font-size: 2.2rem;
@@ -134,9 +181,9 @@
     .confidence-bar-bg {
       width: 100%;
       height: 6px;
-      background: #374151;
+      background: #1e293b;
       border-radius: 3px;
-      margin-top: 8px;
+      margin-top: 6px;
       overflow: hidden;
     }
     .confidence-bar-fill {
@@ -146,36 +193,65 @@
       transition: width 0.1s ease;
     }
 
-    .topk-list {
+    /* Spoken Transcript */
+    .transcript-box {
+      min-height: 80px;
+      max-height: 140px;
+      overflow-y: auto;
+      background: #0b0f17;
+      border-radius: 8px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    .topk-row {
+    .transcript-item {
       display: flex;
-      justify-content: space-between;
-      font-size: 0.9rem;
+      flex-direction: column;
+      gap: 2px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #1e293b;
+      font-size: 0.85rem;
     }
-    .topk-label { font-weight: 500; }
-    .topk-val { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+    .transcript-twi {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f59e0b;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .transcript-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .unverified-badge {
+      font-size: 0.65rem;
+      background: rgba(217, 119, 6, 0.2);
+      border: 1px solid var(--unverified-badge);
+      color: #fbbf24;
+      padding: 1px 5px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
 
     .phrase-box {
-      min-height: 60px;
-      background: #111827;
+      min-height: 48px;
+      background: #0b0f17;
       border-radius: 8px;
-      padding: 10px;
-      font-size: 1rem;
-      color: #93c5fd;
+      padding: 8px 10px;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      align-items: flex-start;
+      align-items: center;
     }
     .word-pill {
-      background: rgba(59, 130, 246, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.4);
+      background: rgba(37, 99, 235, 0.15);
+      border: 1px solid rgba(37, 99, 235, 0.35);
       padding: 2px 8px;
       border-radius: 4px;
+      font-size: 0.85rem;
       font-weight: 500;
     }
 
@@ -185,7 +261,7 @@
       gap: 8px;
     }
     .stat-item {
-      background: #111827;
+      background: #0b0f17;
       padding: 8px;
       border-radius: 6px;
       text-align: center;
@@ -196,7 +272,10 @@
 </head>
 <body>
   <header>
-    <h1>SignSpeak Live Recognition</h1>
+    <div class="brand-title">
+      <h1>Amegbe</h1>
+      <span class="subtitle">Real-Time Sign Recognition & Twi Speech</span>
+    </div>
     <div id="statusBadge" class="status-badge">Disconnected</div>
   </header>
 
@@ -208,14 +287,14 @@
       <div class="video-controls">
         <button id="startBtn" class="btn-primary">Start Camera</button>
         <button id="stopBtn" class="btn-danger" disabled>Stop</button>
-        <button id="resetBtn" class="btn-secondary" disabled>Reset Phrase</button>
+        <button id="resetBtn" class="btn-secondary" disabled>Reset</button>
       </div>
     </div>
 
     <div class="side-panel">
-      <!-- Current Active Word -->
+      <!-- Live Sign -->
       <div class="card">
-        <div class="card-title">Live Recognition</div>
+        <div class="card-title">Live Sign Recognizer</div>
         <div class="detected-word-container">
           <div id="activeWord" class="detected-word">—</div>
           <div class="confidence-bar-bg">
@@ -224,23 +303,21 @@
         </div>
       </div>
 
-      <!-- Top-3 Guesses -->
+      <!-- Spoken Transcript -->
       <div class="card">
-        <div class="card-title">Top-3 Candidates</div>
-        <div id="topkList" class="topk-list">
-          <div class="topk-row"><span class="topk-label">—</span><span class="topk-val">0%</span></div>
-          <div class="topk-row"><span class="topk-label">—</span><span class="topk-val">0%</span></div>
-          <div class="topk-row"><span class="topk-label">—</span><span class="topk-val">0%</span></div>
+        <div class="card-title">Spoken Transcript (Twi)</div>
+        <div id="transcriptBox" class="transcript-box">
+          <span style="color: var(--text-muted); font-size: 0.85rem;">Speech output will appear here...</span>
         </div>
       </div>
 
-      <!-- Committed Phrase -->
+      <!-- Sentence Buffer -->
       <div class="card">
         <div class="card-title">Committed Signs</div>
         <div id="phraseBox" class="phrase-box"></div>
       </div>
 
-      <!-- Stream Metrics -->
+      <!-- Metrics -->
       <div class="card">
         <div class="card-title">Performance Metrics</div>
         <div class="stats-grid">
@@ -250,15 +327,39 @@
           </div>
           <div class="stat-item">
             <div id="rttDisplay" class="stat-val">0 ms</div>
-            <div class="stat-lbl">Latency</div>
+            <div class="stat-lbl">Round Trip</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Speech Controls Toolbar -->
+  <div class="speech-bar">
+    <div class="control-group">
+      <span class="control-label">Speech Mode:</span>
+      <select id="modeSelect">
+        <option value="word">Word by Word</option>
+        <option value="sentence">Sentence (Pause)</option>
+        <option value="off">Off (Silent)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <span class="control-label">Voice:</span>
+      <select id="voiceSelect">
+        <option value="auto">Auto (Best Quality)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <button id="speakNowBtn" class="btn-gold" style="padding: 6px 14px;" disabled>Speak Now</button>
+      <button id="muteBtn" class="btn-secondary" style="padding: 6px 14px;">Mute Audio</button>
+    </div>
+  </div>
+
   <script type="module">
-    import { SignSpeakClient } from '/static/signspeak-client.js';
+    import { AmegbeClient } from '/static/amegbe-client.js';
 
     const videoEl = document.getElementById('webcamVideo');
     const startBtn = document.getElementById('startBtn');
@@ -267,20 +368,48 @@
     const statusBadge = document.getElementById('statusBadge');
     const activeWordEl = document.getElementById('activeWord');
     const confFill = document.getElementById('confFill');
-    const topkList = document.getElementById('topkList');
     const phraseBox = document.getElementById('phraseBox');
+    const transcriptBox = document.getElementById('transcriptBox');
     const fpsDisplay = document.getElementById('fpsDisplay');
     const rttDisplay = document.getElementById('rttDisplay');
 
-    const client = new SignSpeakClient({ fps: 15, maxWidth: 480 });
+    const modeSelect = document.getElementById('modeSelect');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const speakNowBtn = document.getElementById('speakNowBtn');
+    const muteBtn = document.getElementById('muteBtn');
+
+    let isMuted = false;
+
+    // Load available voices from API
+    fetch('/tts/voices')
+      .then(res => res.json())
+      .then(data => {
+        if (data.voices) {
+          data.voices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.name;
+            opt.textContent = `${v.name} (${v.language || 'twi'}${v.twi_only_uer ? ` err: ${(v.twi_only_uer*100).toFixed(1)}%` : ''})`;
+            voiceSelect.appendChild(opt);
+          });
+        }
+      })
+      .catch(err => console.warn('Could not load voices:', err));
+
+    const client = new AmegbeClient({
+      fps: 15,
+      maxWidth: 480,
+      speechMode: modeSelect.value,
+      voice: voiceSelect.value,
+    });
 
     let lastPredTime = performance.now();
     let frameCount = 0;
-    let fpsVal = 0;
+    let hasTranscript = false;
 
     client.on('ready', (info) => {
-      statusBadge.textContent = 'Active (Ready)';
+      statusBadge.textContent = 'Active (Amegbe Ready)';
       statusBadge.className = 'status-badge connected active';
+      updateButtonStates();
     });
 
     client.on('prediction', (data) => {
@@ -288,44 +417,61 @@
       frameCount++;
       const dt = (now - lastPredTime) / 1000.0;
       if (dt >= 1.0) {
-        fpsVal = frameCount / dt;
-        fpsDisplay.textContent = fpsVal.toFixed(1);
+        fpsDisplay.textContent = (frameCount / dt).toFixed(1);
         frameCount = 0;
         lastPredTime = now;
       }
 
-      // Latency estimate (client to server round trip)
       const rtt = Math.max(1, Math.round(now - (data.t || now)));
       rttDisplay.textContent = `${rtt} ms`;
 
-      // Word and confidence
       const isIdle = data.label === 'idle' || data.warming_up;
       activeWordEl.textContent = isIdle ? '—' : data.label.toUpperCase();
       const confPct = Math.round((data.conf || 0) * 100);
       confFill.style.width = isIdle ? '0%' : `${confPct}%`;
 
-      // Top-k
-      if (data.topk && data.topk.length) {
-        topkList.innerHTML = data.topk.map(([label, score]) => `
-          <div class="topk-row">
-            <span class="topk-label" style="${label === data.label ? 'color: #60a5fa;' : ''}">${label}</span>
-            <span class="topk-val">${Math.round(score * 100)}%</span>
-          </div>
-        `).join('');
-      }
-
-      // Update phrase pills
       if (data.phrase) {
-        renderPhrase(data.phrase);
+        phraseBox.innerHTML = data.phrase.map(w => `<span class="word-pill">${w.toUpperCase()}</span>`).join('');
+        if (data.phrase.length > 0 && modeSelect.value === 'sentence') {
+          speakNowBtn.disabled = false;
+        }
       }
     });
 
-    client.on('commit', (word) => {
-      console.log('Committed word:', word);
+    client.on('speech', (ev) => {
+      if (!hasTranscript) {
+        transcriptBox.innerHTML = '';
+        hasTranscript = true;
+      }
+      const itemEl = document.createElement('div');
+      itemEl.className = 'transcript-item';
+
+      const twiEl = document.createElement('div');
+      twiEl.className = 'transcript-twi';
+      twiEl.textContent = ev.twi;
+
+      if (!ev.verified) {
+        const badge = document.createElement('span');
+        badge.className = 'unverified-badge';
+        badge.textContent = 'unverified';
+        twiEl.appendChild(badge);
+      }
+
+      const metaEl = document.createElement('div');
+      metaEl.className = 'transcript-meta';
+      metaEl.textContent = `English: "${ev.english}" • ${ev.mode} mode • ${ev.duration_s.toFixed(2)}s`;
+
+      itemEl.appendChild(twiEl);
+      itemEl.appendChild(metaEl);
+      transcriptBox.appendChild(itemEl);
+      transcriptBox.scrollTop = transcriptBox.scrollHeight;
+    });
+
+    client.on('speech_error', (err) => {
+      console.warn('Speech error received:', err);
     });
 
     client.on('error', (err) => {
-      console.error(err);
       statusBadge.textContent = 'Error';
       statusBadge.className = 'status-badge';
     });
@@ -335,9 +481,29 @@
       statusBadge.className = 'status-badge';
     });
 
-    function renderPhrase(phrase) {
-      phraseBox.innerHTML = phrase.map(w => `<span class="word-pill">${w.toUpperCase()}</span>`).join('');
+    function updateButtonStates() {
+      speakNowBtn.disabled = modeSelect.value !== 'sentence';
     }
+
+    modeSelect.onchange = () => {
+      client.configureSpeech({ speechMode: modeSelect.value, voice: voiceSelect.value });
+      updateButtonStates();
+    };
+
+    voiceSelect.onchange = () => {
+      client.configureSpeech({ speechMode: modeSelect.value, voice: voiceSelect.value });
+    };
+
+    speakNowBtn.onclick = () => {
+      client.speakNow();
+    };
+
+    muteBtn.onclick = () => {
+      isMuted = !isMuted;
+      client.setMute(isMuted);
+      muteBtn.textContent = isMuted ? 'Unmute Audio' : 'Mute Audio';
+      muteBtn.className = isMuted ? 'btn-danger' : 'btn-secondary';
+    };
 
     startBtn.onclick = async () => {
       startBtn.disabled = true;
@@ -358,6 +524,7 @@
       startBtn.disabled = false;
       stopBtn.disabled = true;
       resetBtn.disabled = true;
+      speakNowBtn.disabled = true;
       statusBadge.textContent = 'Stopped';
       statusBadge.className = 'status-badge';
       activeWordEl.textContent = '—';
@@ -366,7 +533,9 @@
 
     resetBtn.onclick = () => {
       client.reset();
+      client.clearSentence();
       phraseBox.innerHTML = '';
+      speakNowBtn.disabled = true;
     };
   </script>
 </body>

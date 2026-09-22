@@ -37,7 +37,8 @@ class StreamingRecognizer:
         self.device = device
 
         # Limit PyTorch inference threads for responsive streaming
-        torch.set_num_threads(2)
+        if torch.get_num_threads() != 2:
+            torch.set_num_threads(2)
 
         # Load metadata if present
         meta_file = self.model_dir / "model_meta.json"
@@ -48,10 +49,10 @@ class StreamingRecognizer:
             except Exception:
                 pass
 
-        self.window_s = float(window_s or meta.get("window_s", C.WINDOW_S))
-        self.infer_stride_ms = int(infer_stride_ms or meta.get("infer_stride_ms", C.INFER_STRIDE_MS))
-        self.conf_threshold = float(conf_threshold or meta.get("conf_threshold", 0.40))
-        self.debounce_n = int(debounce_n or meta.get("debounce_n", 4))
+        self.window_s = float(window_s if window_s is not None else meta.get("window_s", C.WINDOW_S))
+        self.infer_stride_ms = int(infer_stride_ms if infer_stride_ms is not None else meta.get("infer_stride_ms", C.INFER_STRIDE_MS))
+        self.conf_threshold = float(conf_threshold if conf_threshold is not None else meta.get("conf_threshold", C.CONF_THRESHOLD))
+        self.debounce_n = int(debounce_n if debounce_n is not None else meta.get("debounce_n", 4))
         self.idle_label = str(meta.get("idle_label", C.IDLE_LABEL))
 
         # Model and labels
@@ -81,6 +82,7 @@ class StreamingRecognizer:
         # State tracking
         self.last_t_ms: Optional[int] = None
         self.last_infer_t_ms: Optional[int] = None
+        self.last_stride_t_ms: Optional[int] = None
 
         # Debounce & Cooldown state
         self.streak_label: Optional[str] = None
@@ -107,6 +109,7 @@ class StreamingRecognizer:
         self.buffer.clear()
         self.last_t_ms = None
         self.last_infer_t_ms = None
+        self.last_stride_t_ms = None
         self.streak_label = None
         self.streak_count = 0
         self.last_committed_word = None
@@ -198,6 +201,9 @@ class StreamingRecognizer:
             return res
 
         # Classification stride
+        stride_dt_ms = (t_ms - self.last_stride_t_ms) if self.last_stride_t_ms is not None else self.infer_stride_ms
+        self.last_stride_t_ms = t_ms
+
         buf_duration = (t_ms - self.buffer[0][0]) if self.buffer else 0.0
         warming_up = buf_duration < 750.0
 
@@ -211,7 +217,7 @@ class StreamingRecognizer:
             # Idle / no-hand: reset streak, accumulate idle stretch
             self.streak_label = None
             self.streak_count = 0
-            self.idle_stretch_ms += dt_ms
+            self.idle_stretch_ms += stride_dt_ms
             if self.idle_stretch_ms >= 400.0:
                 self.cooldown_satisfied = True
 
@@ -240,7 +246,7 @@ class StreamingRecognizer:
             if pred_label == self.idle_label or pred_conf < self.conf_threshold:
                 self.streak_label = None
                 self.streak_count = 0
-                self.idle_stretch_ms += dt_ms
+                self.idle_stretch_ms += stride_dt_ms
                 if self.idle_stretch_ms >= 400.0:
                     self.cooldown_satisfied = True
             else:

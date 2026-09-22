@@ -180,7 +180,8 @@ def build_dataset(
     train_sign_counts = defaultdict(int)
 
     # Process each label
-    for label in sorted(video_groups.keys()):
+    for l_idx, label in enumerate(sorted(video_groups.keys()), 1):
+        print(f"[{l_idx}/{len(video_groups)}] Processing label '{label}' ({len(video_groups[label])} videos)...", flush=True)
         strat = strategies[label]
         target_label_idx = label_to_idx[label]
 

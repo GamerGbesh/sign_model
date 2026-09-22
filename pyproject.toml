@@ -27,6 +27,8 @@ dependencies = [
     "httpx>=0.27",
     # Tests
     "pytest>=8.0",
+    "stable-twi-tts[twi]>=0.2.1",
+    "jsonschema>=4.26.0",
 ]
 
 [build-system]
@@ -35,3 +37,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["asl"]
+
+[tool.pytest.ini_options]
+markers = [
+    "tts: tests exercising real ONNX TTS synthesis",
+]

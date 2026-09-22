@@ -1,0 +1,264 @@
+{
+  "$schema": "./vocabulary.schema.json",
+  "version": 1,
+  "dialect": "Twi",
+  "defaults": {
+    "voice": "auto",
+    "unknown_word_policy": "skip"
+  },
+  "words": {
+    "friend": {
+      "enabled": true,
+      "english": "friend",
+      "twi": "adamfo",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Also written adamfoɔ. Yɔnkoɔ is another valid word for friend/companion."
+    },
+    "goodbye": {
+      "enabled": true,
+      "english": "goodbye",
+      "twi": "nante yie",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Literally 'walk well'. Other forms include baabae and nkyirioo."
+    },
+    "hello": {
+      "enabled": true,
+      "english": "hello",
+      "twi": "akwaaba",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Akwaaba means 'welcome' and is commonly used as a greeting. Other conversational greetings include ɛte sɛn?, wo ho te sɛn?, and mekyea wo oo."
+    },
+    "help": {
+      "enabled": true,
+      "english": "help",
+      "twi": "boa",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Boa is the verb 'to help'. The noun 'help' is mmoa."
+    },
+    "name": {
+      "enabled": true,
+      "english": "name",
+      "twi": "edin",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Edin means 'name'. The verb 'to name' is bɔ din. For 'my name is', use 'me din de ...'."
+    },
+    "no": {
+      "enabled": true,
+      "english": "no",
+      "twi": "dabi",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Standalone negative response meaning 'no'. Sentence-level negation requires appropriate Twi grammar."
+    },
+    "please": {
+      "enabled": true,
+      "english": "please",
+      "twi": "mepa wo kyɛw",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Also commonly written mepaakyɛw. Mesrɛ wo is another valid expression meaning 'please/I beg you'."
+    },
+    "sorry": {
+      "enabled": true,
+      "english": "sorry",
+      "twi": "kafra",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Kafra is commonly used as an expression of apology or sympathy. Context may require a fuller expression."
+    },
+    "thank_you": {
+      "enabled": true,
+      "english": "thank you",
+      "twi": "medaase",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Common Twi expression meaning 'thank you'."
+    },
+    "yes": {
+      "enabled": true,
+      "english": "yes",
+      "twi": "aane",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Aane is the standard affirmative response. Yiw is also a valid form."
+    },
+    "bad": {
+      "enabled": true,
+      "english": "bad",
+      "twi": "bɔne",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Bɔne means bad, evil, or wrong depending on context."
+    },
+    "before": {
+      "enabled": true,
+      "english": "before",
+      "twi": "ansa",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Ansa means 'before' or 'earlier'. Context may require 'ansa na' in a sentence."
+    },
+    "book": {
+      "enabled": true,
+      "english": "book",
+      "twi": "nwoma",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Nwoma means book or written material."
+    },
+    "chair": {
+      "enabled": true,
+      "english": "chair",
+      "twi": "akonnwa",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Akonnwa means chair or seat."
+    },
+    "drink": {
+      "enabled": true,
+      "english": "drink",
+      "twi": "nom",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Nom is the verb 'to drink'. Nsa means alcoholic drink/liquor, so do not use nsa as the general translation of the verb 'drink'."
+    },
+    "fine": {
+      "enabled": true,
+      "english": "fine",
+      "twi": "yɛ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Fine is context-dependent. For 'I'm fine', use 'me ho yɛ' or the fuller 'me ho yɛ'. Do not treat yɛ as a universal translation of every English use of 'fine'."
+    },
+    "food": {
+      "enabled": true,
+      "english": "food",
+      "twi": "aduane",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Aduane means food or a meal."
+    },
+    "go": {
+      "enabled": true,
+      "english": "go",
+      "twi": "kɔ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Kɔ is the verb 'to go'."
+    },
+    "good": {
+      "enabled": true,
+      "english": "good",
+      "twi": "yɛ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Context-dependent. Yɛ can mean 'be good' or 'be okay'. 'Eye'/'ɛyɛ' may appear in sentence forms."
+    },
+    "good_evening": {
+      "enabled": true,
+      "english": "good evening",
+      "twi": "maadwo",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Maadwo is the standard evening greeting."
+    },
+    "happy": {
+      "enabled": true,
+      "english": "happy",
+      "twi": "ani agye",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Ani agye expresses being happy or glad. The exact construction can change depending on the sentence."
+    },
+    "home": {
+      "enabled": true,
+      "english": "home",
+      "twi": "fie",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Fie means home or house depending on context."
+    },
+    "i_m_fine": {
+      "enabled": true,
+      "english": "I'm fine",
+      "twi": "me ho yɛ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Common expression meaning 'I'm fine' or 'I'm okay'."
+    },
+    "love": {
+      "enabled": true,
+      "english": "love",
+      "twi": "dɔ",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Dɔ means to love. Odɔ means love/affection as a noun in some contexts."
+    },
+    "school": {
+      "enabled": true,
+      "english": "school",
+      "twi": "sukuu",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Sukuu means school."
+    },
+    "walk": {
+      "enabled": true,
+      "english": "walk",
+      "twi": "nante",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Nante means to walk. It also appears in the expression 'nante yie' meaning 'goodbye/literally walk well'."
+    },
+    "water": {
+      "enabled": true,
+      "english": "water",
+      "twi": "nsuo",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Nsuo means water."
+    },
+    "who": {
+      "enabled": true,
+      "english": "who",
+      "twi": "hwan",
+      "status": "verified",
+      "verified_by": "LEARNAKAN English-Twi Dictionary",
+      "audio": null,
+      "notes": "Hwan means 'who'. For example, 'Hwan ne no?' means 'Who is he/she?'"
+    }
+  },
+  "phrases": []
+}

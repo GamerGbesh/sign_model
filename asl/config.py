@@ -29,6 +29,22 @@ IDLE_LABEL = "idle"
 WINDOW_S = 3.0  # seconds of signal per model input; finalized from p90 (2.74s + 0.4s = 3.0s)
 INFER_STRIDE_MS = 100  # classify at most this often (stream time)
 
+# --- Speech & Vocabulary (Amegbe) ------------------------------------------
+import os
+
+VOCAB_DIR = BASE_DIR / "vocab"
+VOCAB_JSON = VOCAB_DIR / "vocabulary.json"
+VOCAB_SCHEMA = VOCAB_DIR / "vocabulary.schema.json"
+TTS_CACHE_DIR = Path(os.environ.get("AMEGBE_TTS_CACHE_DIR", str(DATA_DIR / "tts_cache")))
+
+SPEECH_MODE = os.environ.get("AMEGBE_SPEECH_MODE", "word")  # "word" | "sentence" | "off"
+TTS_VOICE = os.environ.get("AMEGBE_TTS_VOICE", "auto")
+TTS_LANGUAGE = os.environ.get("AMEGBE_TTS_LANGUAGE", "twi")
+TTS_MODEL_DIR = os.environ.get("AMEGBE_TTS_MODEL_DIR", None)
+UNKNOWN_WORD_POLICY = os.environ.get("AMEGBE_UNKNOWN_WORD_POLICY", "skip")
+WORD_QUEUE_MAX = int(os.environ.get("AMEGBE_WORD_QUEUE_MAX", "3"))
+SENTENCE_PAUSE_S = float(os.environ.get("AMEGBE_SENTENCE_PAUSE_S", "2.5"))
+
 # --- Feature layout --------------------------------------------------------
 # Per frame: pose (33 x [x,y,z,visibility]) + left hand (21 x [x,y,z]) +
 # right hand (21 x [x,y,z]). Face landmarks are omitted in v1.

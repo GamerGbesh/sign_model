@@ -92,15 +92,11 @@ export class SignSpeakClient {
     this.ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === 'ready') {
-          this.emit('ready', msg);
-        } else if (msg.type === 'prediction') {
-          this.emit('prediction', msg);
-          if (msg.commit) {
-            this.emit('commit', msg.commit, msg);
-          }
-        } else if (msg.type === 'reset') {
-          this.emit('reset', msg);
+        if (msg.type) {
+          this.emit(msg.type, msg);
+        }
+        if (msg.type === 'prediction' && msg.commit) {
+          this.emit('commit', msg.commit, msg);
         }
       } catch (err) {
         console.error('Failed to parse WebSocket message:', err);

@@ -43,9 +43,12 @@ def evaluate_model(
     X: np.ndarray,
     y: np.ndarray,
     labels: list[str],
-    device: str = "cpu",
+    device: str | None = None,
 ) -> Tuple[float, float, dict, np.ndarray, np.ndarray]:
     """Returns (accuracy, macro_f1, per_class_report, confusion_matrix, probs)."""
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = model.to(device)
     model.eval()
     Xt = torch.tensor(X, dtype=torch.float32, device=device)
     with torch.no_grad():
@@ -133,8 +136,15 @@ def train_custom(
     batch_size: int = 16,
     lr: float = 1e-3,
     label_smoothing: float = 0.05,
-    device: str = "cpu",
+    device: str | None = None,
 ):
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    dev_info = device
+    if device.startswith("cuda") and torch.cuda.is_available():
+        dev_info += f" ({torch.cuda.get_device_name(0)})"
+    print(f"Using device: {dev_info}")
+
     print("================ LOADING DATASET ================")
     X_train = np.load(data_dir / "X_train.npy")
     y_train = np.load(data_dir / "y_train.npy")
@@ -306,9 +316,10 @@ def main():
     parser.add_argument("--epochs", type=int, default=160, help="Number of training epochs")
     parser.add_argument("--batch-size", type=int, default=16, help="Batch size")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
+    parser.add_argument("--device", type=str, default=None, help="Device ('cuda' or 'cpu'). Defaults to cuda if available.")
     args = parser.parse_args()
 
-    train_custom(seeds=args.seeds, epochs=args.epochs, batch_size=args.batch_size, lr=args.lr)
+    train_custom(seeds=args.seeds, epochs=args.epochs, batch_size=args.batch_size, lr=args.lr, device=args.device)
 
 
 if __name__ == "__main__":
